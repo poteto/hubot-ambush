@@ -8,34 +8,38 @@
 #   None
 #
 # Commands:
-#   hubot ambush <user name>: <message>
+#   hubot ambush <user name> <message>
 #
 # Author:
 #   jmoses
 
-appendAmbush = (data, toUser, fromUser, message) ->
-  data[toUser.name] or= []
+moment = require('moment')
 
-  data[toUser.name].push [fromUser.name, message]
+appendAmbush = (data, toUser, fromUser, message, time) ->
+  data[toUser] or= []
+
+  data[toUser].push { fromUser: fromUser, message: message, createdAt: time }
 
 module.exports = (robot) ->
-  robot.brain.on 'loaded', =>
+  robot.brain.on 'loaded', ->
     robot.brain.data.ambushes ||= {}
 
-  robot.respond /ambush (.*?): (.*)/i, (msg) ->
+  robot.respond /ambush (.*?) (.*)/i, (msg) ->
     users = robot.brain.usersForFuzzyName(msg.match[1].trim())
+    fromUser = msg.message.user.name
     if users.length is 1
-      user = users[0]
-      appendAmbush(robot.brain.data.ambushes, user, msg.message.user, "#{msg.match[2]} sent at #{new Date()}")
-      msg.send "Ambush prepared"
+      toUser = users[0].name
+      appendAmbush(robot.brain.data.ambushes, toUser, fromUser, "#{msg.match[2]}", moment(new Date()))
+      msg.send "OK #{fromUser}, ambush prepared for #{toUser}! I'll let them know when I see them."
     else if users.length > 1
-      msg.send "Too many users like that"
+      msg.send "Too many users like that."
     else
-      msg.send "#{msg.match[1]}? Never heard of 'em"
+      msg.send "#{msg.match[1]}? Never heard of 'em."
 
   robot.hear /./i, (msg) ->
     return unless robot.brain.data.ambushes?
-    if (ambushes = robot.brain.data.ambushes[msg.message.user.name])
+    username = msg.message.user.name
+    if (ambushes = robot.brain.data.ambushes[username])
       for ambush in ambushes
-        msg.send "#{msg.message.user.name}: while you were out, #{ambush[0]} said: #{ambush[1]}"
-      delete robot.brain.data.ambushes[msg.message.user.name]
+        msg.send "Hey #{username}, #{ambush.createdAt.fromNow()}, #{ambush.fromUser} said: #{ambush.message}"
+      delete robot.brain.data.ambushes[username]

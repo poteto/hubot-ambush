@@ -4,34 +4,28 @@
   "version": "0.0.3",
   "author": "jmoses",
   "license": "MIT",
-
   "keywords": [
     "hubot",
     "hubot-scripts"
   ],
-
   "repository": {
     "type": "git",
     "url": "git@github.com:hubot-scripts/hubot-ambush.git"
   },
-
   "bugs": {
     "url": "https://github.com/hubot-scripts/hubot-ambush/issues"
   },
-
   "dependencies": {
-    "coffee-script": "*"
+    "coffee-script": "*",
+    "moment": "^2.10.5"
   },
-
   "devDependencies": {
     "mocha": "*",
     "chai": "*",
     "sinon-chai": "*",
     "sinon": "*"
   },
-
   "main": "index.coffee",
-
   "scripts": {
     "test": "script/test"
   }
